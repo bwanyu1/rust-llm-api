@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>要約アプリ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+    <style>
+      :root { --fg:#111; --bg:#fff; --muted:#666; --brand:#2563eb; --border:#e5e7eb; }
+      *{box-sizing:border-box} body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;color:var(--fg);background:var(--bg)}
+      .wrap{max-width:880px;margin:24px auto;padding:0 16px}
+      h1{font-size:20px;margin:0 0 16px}
+      textarea{width:100%;min-height:140px;padding:12px;border:1px solid var(--border);border-radius:8px;font:inherit}
+      .row{display:flex;gap:8px;align-items:center;margin:12px 0}
+      button{appearance:none;border:1px solid var(--brand);background:var(--brand);color:#fff;padding:10px 14px;border-radius:8px;font-weight:600;cursor:pointer}
+      button[disabled]{opacity:.6;cursor:progress}
+      .card{border:1px solid var(--border);border-radius:10px;padding:12px;margin:12px 0}
+      .muted{color:var(--muted);font-size:12px}
+      a{color:var(--brand);text-decoration:none}
+      ul{list-style:none;padding:0;margin:0}
+      li{padding:10px 0;border-bottom:1px solid var(--border)}
+      .summary{white-space:pre-wrap}
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>要約アプリ</h1>
+      <div class="card">
+        <textarea id="text" placeholder="ここに本文を貼り付けてください"></textarea>
+        <div class="row">
+          <button id="submit">要約する</button>
+          <span id="status" class="muted"></span>
+        </div>
+        <div id="result" class="summary"></div>
+      </div>
+
+      <h2>最近の要約</h2>
+      <ul id="list"></ul>
+    </div>
+
+    <script src="/main.js" type="module"></script>
+  </body>
+</html>
+
