@@ -30,6 +30,16 @@ pub async fn summarize(client: &Client, api_key: &str, model: &str, text: &str) 
     }
 
     let v: Value = res.json().await.context("failed to deserialize Groq JSON")?;
-    Ok(v["choices"][0]["message"]["content"].as_str().unwrap_or("").to_string())
+    let choices = v.get("choices")
+        .and_then(|c| c.as_array())
+        .context("Groq API response missing 'choices' array")?;
+    let first_choice = choices.get(0)
+        .context("Groq API response 'choices' array is empty")?;
+    let message = first_choice.get("message")
+        .context("Groq API response missing 'message' in first choice")?;
+    let content = message.get("content")
+        .and_then(|c| c.as_str())
+        .context("Groq API response missing 'content' string in message")?;
+    Ok(content.to_string())
 }
 
