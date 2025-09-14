@@ -1,0 +1,19 @@
+services:
+  rust-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    working_dir: /usr/src/app
+    volumes:
+      - .:/usr/src/app
+    env_file:
+      - .env
+    environment:
+      - APP_NAME=.
+      - PORT=8080
+      - HOST=0.0.0.0
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+    ports:
+      - "5085:8080" # host:container
