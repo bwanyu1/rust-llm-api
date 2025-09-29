@@ -4,6 +4,8 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>要約 詳細</title>
+    <!-- Prevent /favicon.ico 404 in dev -->
+    <link rel="icon" href="data:," />
     <style>
       :root { --fg:#111; --bg:#fff; --muted:#666; --brand:#2563eb; --border:#e5e7eb; }
       body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;color:var(--fg);background:var(--bg)}
@@ -28,7 +30,6 @@
         <div id="input" class="input"></div>
       </div>
     </div>
-    <script src="/detail.js" type="module"></script>
+    <script src="./detail.js" type="module"></script>
   </body>
   </html>
-

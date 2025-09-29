@@ -2,11 +2,15 @@ mod api;
 mod db;
 mod groq;
 
+use dotenv::dotenv;
+use std::env;
 use anyhow::{anyhow, Context, Result};
 use reqwest::Client;
 use std::net::SocketAddr;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use tower_http::services::{ServeDir, ServeFile};
+use tower_http::cors::CorsLayer;
+use axum::http::{HeaderValue, Method, header};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -15,9 +19,9 @@ async fn main() -> Result<()> {
         .with(tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| "info".into()))
         .with(tracing_subscriber::fmt::layer())
         .init();
-
+    dotenv().ok();
     // Config
-    let api_key = std::env::var("GROQ_API_KEY").map_err(|_| {
+    let api_key = env::var("GROQ_API_KEY").map_err(|_| {
         anyhow!("GROQ_API_KEY is not set. Export it, e.g. `export GROQ_API_KEY=...`")
     })?;
     let model = std::env::var("GROQ_MODEL").unwrap_or_else(|_| "llama-3.3-70b-versatile".to_string());
@@ -35,9 +39,19 @@ async fn main() -> Result<()> {
 
     // Static files under ./public with SPA-ish index fallback
     let static_service = ServeDir::new("public").not_found_service(ServeFile::new("public/index.html"));
+    // CORS (allow dev UI on :5500 to call API on :8080)
+    let cors = CorsLayer::new()
+        .allow_origin([
+            HeaderValue::from_static("http://127.0.0.1:5500"),
+            HeaderValue::from_static("http://localhost:5500"),
+        ])
+        .allow_methods([Method::GET, Method::POST])
+        .allow_headers([header::CONTENT_TYPE]);
+
     let app = axum::Router::new()
         .merge(api_router)
-        .nest_service("/", static_service);
+        .nest_service("/", static_service)
+        .layer(cors);
 
     // Bind
     let host = std::env::var("HOST").unwrap_or_else(|_| "0.0.0.0".to_string());

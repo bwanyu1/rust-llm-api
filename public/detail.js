@@ -9,8 +9,9 @@ async function load() {
     document.body.textContent = 'IDが不正です';
     return;
   }
+  const API_BASE = (location.port === '5500') ? 'http://localhost:8080' : '';
   try {
-    const res = await fetch(`/api/summaries/${id}`);
+    const res = await fetch(`${API_BASE}/api/summaries/${id}`);
     if (!res.ok) throw new Error(await res.text());
     const data = await res.json();
     document.getElementById('meta').textContent = `#${data.item.id} / ${data.item.created_at}`;
@@ -22,4 +23,3 @@ async function load() {
 }
 
 document.addEventListener('DOMContentLoaded', load);
-

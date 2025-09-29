@@ -1,10 +1,12 @@
 const el = (id) => document.getElementById(id);
+// If served from Live Server (:5500), call the API on :8080.
+const API_BASE = (location.port === '5500') ? 'http://localhost:5085' : '';
 
 async function loadList() {
   const ul = el('list');
   ul.textContent = '読み込み中...';
   try {
-    const res = await fetch('/api/summaries');
+    const res = await fetch(`${API_BASE}/api/summaries`);
     if (!res.ok) throw new Error(await res.text());
     const data = await res.json();
     ul.textContent = '';
@@ -38,7 +40,7 @@ async function summarize() {
   result.textContent = '';
   el('submit').disabled = true;
   try {
-    const res = await fetch('/api/summarize', {
+    const res = await fetch(`${API_BASE}/api/summarize`, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain; charset=utf-8' },
       body: text,
@@ -61,4 +63,3 @@ document.addEventListener('DOMContentLoaded', () => {
   el('submit').addEventListener('click', summarize);
   loadList();
 });
-
