@@ -1,5 +1,5 @@
 const el = (id) => document.getElementById(id);
-// If served from Live Server (:5500), call the API on :8080.
+// If served from Live Server (:5500), call the API on the Docker-exposed port.
 const API_BASE = (location.port === '5500') ? 'http://localhost:5085' : '';
 
 async function loadList() {
@@ -17,7 +17,7 @@ async function loadList() {
     for (const it of data.items) {
       const li = document.createElement('li');
       const a = document.createElement('a');
-      a.href = `/detail.html?id=${it.id}`;
+      a.href = `detail.html?id=${it.id}`;
       a.textContent = `#${it.id} ${it.summary_preview}`;
       const small = document.createElement('div');
       small.className = 'muted';
@@ -48,7 +48,7 @@ async function summarize() {
     if (!res.ok) throw new Error(await res.text());
     const data = await res.json();
     result.textContent = data.summary || '';
-    status.innerHTML = `保存しました: <a href="/detail.html?id=${data.id}">#${data.id}</a>`;
+    status.innerHTML = `保存しました: <a href="detail.html?id=${data.id}">#${data.id}</a>`;
     el('text').value = '';
     // refresh list
     loadList();

@@ -9,7 +9,7 @@ async function load() {
     document.body.textContent = 'IDが不正です';
     return;
   }
-  const API_BASE = (location.port === '5500') ? 'http://localhost:8080' : '';
+  const API_BASE = (location.port === '5500') ? 'http://localhost:5085' : '';
   try {
     const res = await fetch(`${API_BASE}/api/summaries/${id}`);
     if (!res.ok) throw new Error(await res.text());

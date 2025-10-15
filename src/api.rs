@@ -62,7 +62,7 @@ async fn summarize(
     headers: HeaderMap,
     body: Bytes,
 ) -> Result<Json<SummarizeResponse>, ApiError> {
-    // Accept either application/json {"text": "..."} or text/plain raw body
+    // Determine content type
     let ct = headers
         .get(header::CONTENT_TYPE)
         .and_then(|v| v.to_str().ok())
