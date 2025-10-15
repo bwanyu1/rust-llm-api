@@ -44,3 +44,8 @@ app.db
 
 # Optional local override for compose
 docker-compose.override.yml
+
+# Next.js / Node artifacts
+frontend/node_modules
+frontend/.next
+frontend/out

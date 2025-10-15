@@ -1,16 +1,14 @@
 mod api;
 mod db;
-mod groq;
 
 use dotenv::dotenv;
 use std::env;
-use anyhow::{anyhow, Context, Result};
-use reqwest::Client;
+use anyhow::{Context, Result};
 use std::net::SocketAddr;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use tower_http::services::{ServeDir, ServeFile};
-use tower_http::cors::CorsLayer;
-use axum::http::{HeaderValue, Method, header};
+use tower_http::cors::{Any, CorsLayer};
+use axum::http::Method;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -20,33 +18,22 @@ async fn main() -> Result<()> {
         .with(tracing_subscriber::fmt::layer())
         .init();
     dotenv().ok();
-    // Config
-    let api_key = env::var("GROQ_API_KEY").map_err(|_| {
-        anyhow!("GROQ_API_KEY is not set. Export it, e.g. `export GROQ_API_KEY=...`")
-    })?;
-    let model = std::env::var("GROQ_MODEL").unwrap_or_else(|_| "llama-3.3-70b-versatile".to_string());
     // Use a simple relative DB file by default to avoid path/permission issues
-    let database_url = std::env::var("DATABASE_URL").unwrap_or_else(|_| "sqlite://app.db".to_string());
-
-    // HTTP client
-    let http = Client::builder().user_agent("rust-llm-api/0.1").build().context("failed to build HTTP client")?;
+    let database_url = env::var("DATABASE_URL").unwrap_or_else(|_| "sqlite://app.db".to_string());
 
     // DB
     let db = db::Db::init(&database_url).await?;
 
     // API router
-    let api_router = api::routes(api::AppState { db, http, groq_api_key: api_key, groq_model: model, database_url: database_url.clone() });
+    let api_router = api::routes(api::AppState { db, database_url: database_url.clone() });
 
     // Static files under ./public with SPA-ish index fallback
     let static_service = ServeDir::new("public").not_found_service(ServeFile::new("public/index.html"));
-    // CORS (allow dev UI on :5500 to call API on :8080)
+    // CORS (dev use: allow any origin/method/header)
     let cors = CorsLayer::new()
-        .allow_origin([
-            HeaderValue::from_static("http://127.0.0.1:5500"),
-            HeaderValue::from_static("http://localhost:5500"),
-        ])
-        .allow_methods([Method::GET, Method::POST])
-        .allow_headers([header::CONTENT_TYPE]);
+        .allow_origin(Any)
+        .allow_methods([Method::GET, Method::POST, Method::DELETE, Method::PATCH, Method::OPTIONS])
+        .allow_headers(Any);
 
     let app = axum::Router::new()
         .merge(api_router)
@@ -54,8 +41,8 @@ async fn main() -> Result<()> {
         .layer(cors);
 
     // Bind
-    let host = std::env::var("HOST").unwrap_or_else(|_| "0.0.0.0".to_string());
-    let port: u16 = std::env::var("PORT").ok().and_then(|s| s.parse().ok()).unwrap_or(8080);
+    let host = env::var("HOST").unwrap_or_else(|_| "0.0.0.0".to_string());
+    let port: u16 = env::var("PORT").ok().and_then(|s| s.parse().ok()).unwrap_or(8080);
     let addr: SocketAddr = format!("{}:{}", host, port).parse().context("invalid HOST/PORT")?;
     tracing::info!("listening on http://{}", addr);
     axum::serve(tokio::net::TcpListener::bind(addr).await?, app).await?;
